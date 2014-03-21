@@ -6,7 +6,7 @@ Practicing video processing
 Read in video into variable using library of choice
 	Set up library
 	Set up output system
-	Read movei.mov into variable
+	Read movie.mov into variable
 
 Set up input and output system
 	Show each frame
@@ -21,7 +21,7 @@ Find apparanet motion
 	Find longest continuous flow of movement
 	Find frame where velocity is zero
 
-Spot position (optional)
+Spot position (optional, maybe to complicated)
 	Find the dot on the waterbottle
 	Find/read the measuring lines
 	Use proportions to find position

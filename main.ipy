@@ -1,0 +1,41 @@
+%pylab inline --no-import-all
+import numpy as np
+import cv2
+
+def get_frames(file_name):
+    cap = cv2.VideoCapture(file_name)
+    frames = []
+
+    if not cap.isOpened():
+       raise IOError('cv2 could not read from video capture file: '
+                     + file_name)
+
+    ret = True
+    while ret:
+        ret, frame = cap.read()
+        if frame is not None:
+            frames.append(frame)
+
+        # ret will change to False at the end of file
+        # frame has a BGR colored image
+
+    cap.release()
+    return np.array(frames)
+
+def main():
+    frames = get_frames('movie.mov')
+    print ('Loaded {} frames'.format(frames.shape[0]))
+
+    print ('Type a frame number and press enter. -1 to quit')
+    f = 1
+    while f != -1:
+        f = int(input())
+        show(frames[f])
+
+def show(frame):
+    plt.imshow(frame[:, :, [2, 1, 0]])
+    plt.show()
+    
+
+if __name__ == '__main__':
+    main()
