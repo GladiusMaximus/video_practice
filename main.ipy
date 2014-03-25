@@ -1,6 +1,7 @@
 %pylab inline --no-import-all
 import numpy as np
 import cv2
+import matplotlib.cm as cm
 
 def get_frames(file_name):
     cap = cv2.VideoCapture(file_name)
@@ -22,20 +23,43 @@ def get_frames(file_name):
     cap.release()
     return np.array(frames)
 
+def play(frames):
+    for frame in frames:
+    	cv2.imshow('Watch me', frame)
+    	k = cv2.waitKey(60) & 0xff
+        if k == 27:
+           break
+
 def main():
-    frames = get_frames('movie.mov')
-    print ('Loaded {} frames'.format(frames.shape[0]))
+    global frames
+    frames = get_frames('shots/1.ogg')
+    gray_frames = to_gray(frames)
+    bg = get_background(gray_frames)
+    print ('Loaded {} frames'.format(gray_frames.shape[0]))
 
     print ('Type a frame number and press enter. -1 to quit')
     f = 1
     while f != -1:
         f = int(input())
-        show(frames[f])
+        show(gray_frames[f])
+        show(gray_frames[f] - bg)
+
+def get_background(frames):
+    return np.median(frames, axis=0)
 
 def show(frame):
-    plt.imshow(frame[:, :, [2, 1, 0]])
-    plt.show()
-    
+    if len(frame.shape) > 2:
+        plt.imshow(frame[:, :, [2, 1, 0]], interpolation='none', extent=[0, frame.shape[1], 0, frame.shape[0]])
+        plt.show()
+    else:
+        plt.imshow(frame, cmap=cm.Greys_r, interpolation='none', extent=[0, frame.shape[1], 0, frame.shape[0]])
+        plt.show()
+
+def to_gray(frames):
+    gray = np.ndarray(frames.shape[0:3])
+    for t in range(len(frames)):
+        gray[t] = cv2.cvtColor(frames[t], cv2.COLOR_BGR2GRAY)
+    return gray
 
 if __name__ == '__main__':
     main()
