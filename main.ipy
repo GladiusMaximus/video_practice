@@ -40,7 +40,7 @@ def play(frames):
     	cv2.imshow('Watch me', frame)
     	k = cv2.waitKey(60) & 0xff
         if k == 27:
-           break
+            break
 
 def to_gray(frames):
     gray = np.ndarray(frames.shape[0:3])
@@ -60,21 +60,21 @@ def get_background(frames):
 def add(a, b):
     return np.array(np.clip(np.array(a, dtype=np.int) + b, 0, 255), dtype=np.uint8)
 
-def mask(frame, bg, num=.2):
+def mask(frame, bg, num):
     new_frame = frame.copy()
+    new_frame[get_unchanged(frame, bg, num)] = 255
+    return new_frame
+
+def get_unchanged(frame, bg, num):
     bg_gray = cv2.cvtColor(bg, cv2.COLOR_BGR2GRAY)
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     min = add(bg_gray, -num)
     max = add(bg_gray, num)
-    new_frame[(min <= frame_gray) * (frame_gray <= max)] = 255
-    return new_frame
+    return (min <= frame_gray) * (frame_gray <= max)
 
-def get_changed(frame, bg):
-    bg_gray = cv2.cvtColor(bg, cv2.COLOR_BGR2GRAY)
-    frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    new = np.average(np.abs(frame_gray - bg_gray), axis=2)
-    return new
-
+def coord_grid(a):
+    return np.reshape(np.array(list(np.ndindex(*a.shape))), (a.shape) + (len(a.shape),))
+    
 def get_contours(remainder):
     remainder_gray = cv2.cvtColor(r, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(remainder_gray, 0, 255)
@@ -85,19 +85,17 @@ def get_contours(remainder):
         cv2.drawContours(drawing, [cnt], 0, color, 2)
     return drawing, contours, hierarchy
 
-def main():
-    global frames
-    frames = get_frames('shots/1.ogg')
-    gray_frames = to_gray(frames)
-    bg = get_background(gray_frames)
-    print ('Loaded {} frames'.format(gray_frames.shape[0]))
+def get_position(frame, bg, num):
+    c = get_unchanged(frame, bg, num)
+    return [int(np.around(np.average(coord_grid(c)[c], axis=0)[1])), c[~c].shape[0]]
 
-    print ('Type a frame number and press enter. -1 to quit')
-    f = 1
-    while f != -1:
-        f = int(input())
-        show(gray_frames[f])
-        show(gray_frames[f] - bg)
+def main():
+    global a, bg
+    a = get_frames('shots/1.ogg')
+    bg = get_background(a)
+    res = [[x] + get_position(a[x], bg, 6) for x in range(46)]
+    for row in res:
+    	print row
 
 if __name__ == '__main__':
     pass
